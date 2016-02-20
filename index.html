@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>DiceRoller - javascript</title>
+</head>
+
+<body>
+  <!-- Include javascript -->
+  <script type="text/javascript" src="dice.js"></script>
+  <!-- Content -->
+  <div id="id_main">
+    <h3>Dice</h3>
+    <div class="dice">
+      <input class="nbDice" type="number" value="1" min="1" max="20" style="width: 2em" />g
+      <input class="nbKeep" type="number" value="1" min="1" max="10" style="width: 2em" />
+      <input class="specialized" type="checkbox"/>Spéc.
+      <button onclick="onClick(event,'dice')">D10</button>
+      <span class="result"> : -</span>
+      [<span class="details"></span>]
+    </div>
+  </div>
+</body>
+</html>
