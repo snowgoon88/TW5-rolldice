@@ -1,0 +1,16 @@
+{
+	"description": "Demo of the Rolldice plugin",
+	"plugins": [
+		"snowgoon88/rolldice"
+	],
+	"themes": [
+		"tiddlywiki/vanilla",
+		"tiddlywiki/snowwhite"
+	],
+	"includeWikis": [
+	],
+	"build": {
+		"index": [
+			"--rendertiddler","$:/core/save/all","rolldice-demo.html","text/plain"]
+	}
+}
