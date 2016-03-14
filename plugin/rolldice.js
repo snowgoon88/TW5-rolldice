@@ -30,6 +30,7 @@ var Widget = require("$:/core/modules/widgets/widget.js").widget,
 	return val;
     };
 
+
 /*
 Inherit from the base widget class
 */
@@ -54,13 +55,20 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
     var spanNode = $tw.utils.domMaker( "span", {
 	"class" : "rd-label"
     });
-    this.renderChildren(spanNode, null);
+    // Insert Child Node or label
+    if( this._label ) {
+	spanNode.innerHTML = this._label;
+    }
+    else {
+	this.renderChildren(spanNode, null);
+    }
     this.divNode.appendChild(spanNode);
     // Input
     this.inDiceNode = $tw.utils.domMaker( "input", {
 	"class" : "rd-nb-dice",
 	attributes : { type:"number",
-		       value:1, min:1, max:20, style:"width: 2.5em"}
+		       value: this._nbDice ? this._nbDice : 1,
+		       min:1, max:20, style:"width: 2.5em"}
     });
     this.divNode.appendChild(this.inDiceNode);
     var textNode = this.document.createTextNode(" g ");
@@ -68,12 +76,17 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
     this.inKeepNode = $tw.utils.domMaker( "input", {
 	"class" : "rd-nb-keep",
 	attributes : { type:"number",
-		       value:1, min:1, max:20, style:"width: 2.5em"}
+		       value: this._nbKeep ? this._nbKeep : 1,
+		       min:1, max:20, style:"width: 2.5em"}
     });
     this.divNode.appendChild(this.inKeepNode);
+    var specAttributes = {type:"checkbox"};
+    if( this._specialized ) {
+	specAttributes["checked"] = true;
+    }
     this.inSpecNode = $tw.utils.domMaker( "input", {
 	"class" : "rd-spec",
-	attributes : { type:"checkbox" }
+	attributes : specAttributes
     });
     this.divNode.appendChild(this.inSpecNode);
     textNode = this.document.createTextNode(" Spéc. ");
@@ -117,6 +130,38 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
     
     // Render into the dom
     // this.renderChildren(this.parentDomNode,nextSibling);
+};
+
+/**
+ * Compute the internal state of the widget.
+ *
+ * Widget Attributes (value="5g3s") 
+ *  >> Field ("[L5R:][label:]5g3s"
+ * Default : L5R::1g1
+ */
+RolldiceWidget.prototype.execute = function() {
+    // Get attributes with high priority
+    this._type = this.getAttribute( "type" );   // not used
+    this._value = this.getAttribute( "value" ); // to be parsed
+    this._label = this.getAttribute( "label" ); // replace Child
+    // Get Field (change other only if undefined)
+    if( this.hasAttribute( "field" ) ) {
+	var fieldName = this.getAttribute( "field" );
+	var tiddlerName = this.getVariable("currentTiddler");
+	console.log( "__CURRENT t="+tiddlerName);
+	var tiddler = $tw.wiki.getTiddler(tiddlerName);
+	var fieldValue = tiddler.getFieldString(fieldName);
+	console.log( "__FIELD n="+fieldName+" v="+fieldValue );
+	this.parseField( fieldValue );
+    }
+    // Default type
+    this._type = this._type ? this._type : "L5R";
+    // Parse value to get nbDice and nbKeep (TODO L5R specific)
+    if( this._type && this._value ) {
+	this.parseValue( this._type, this._value );
+    }
+    // Do not make child widgets !
+    // this.makeChildWidgets();
 };
 
 RolldiceWidget.prototype.onClickEvent = function (event) {
@@ -193,6 +238,41 @@ RolldiceWidget.prototype.onClickEvent = function (event) {
     res += bonus;
     this.resNode.innerHTML = " : " + res;
     this.detailNode.innerHTML = details;
+};
+RolldiceWidget.prototype.parseField = function (fieldValue) {
+    // Split with ":"
+    var items = fieldValue.split( ":" );
+    console.log( "__PF it="+items);
+    if( items.length === 3 && this._type === undefined ) {
+	this._type = items.shift();
+	console.log( "__TYPE "+this._type );
+    }
+    if( items.length === 2 && this._label === undefined ) {
+	this._label = items.shift();
+	console.log( "__LABEL "+this._label );
+    }
+    if( items.length === 1 && this._value === undefined ) {
+	this._value = items.shift();
+	console.log( "__VAL "+this._value );
+    }
+};
+RolldiceWidget.prototype.parseValue = function (diceType, strValue) {
+    // according to type
+    if( diceType === "L5R" ) {
+	// valStr : nbDice+g+nbKept+[s]
+	// ends with 's'
+	this._specialized = false;
+	if( strValue.endsWith( "s" ) ) {
+	    this._specialized = true;
+	    strValue = strValue.slice( 0, -1);
+	} 
+	// nbDice
+	var numbers = strValue.split( "g" );
+	console.log( "__PARSE numbers="+numbers );
+	this._nbDice = Number( numbers[0] );
+	this._nbKeep = Number( numbers[1] );
+	console.log( "__PARSE nb="+this._nbDice+" nk="+this._nbKeep+" spe=" + this._specialized );
+    }
 };
 
  
