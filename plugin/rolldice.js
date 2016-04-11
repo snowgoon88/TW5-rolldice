@@ -16,7 +16,8 @@ var Widget = require("$:/core/modules/widgets/widget.js").widget,
     RolldiceWidget = function(parseTreeNode,options) {
 	this.initialise(parseTreeNode,options);
     },
-    rollDice = function ( max ) {
+    /** OpenEnded Dice Up : L5R */
+    rollDiceOpenUp = function ( max ) {
 	// max set to 6 if no value given
 	max = max !== undefined ? max : 6;
 	//
@@ -28,9 +29,99 @@ var Widget = require("$:/core/modules/widgets/widget.js").widget,
 	}
 	console.log( "DICE> " + val + " / "+ max );
 	return val;
+    },
+    /** Normal dice : Fate */
+    rollDiceNorm = function ( max ) {
+    	// max set to 6 if no value given
+	max = max !== undefined ? max : 6;
+	//
+	var roll = Math.floor((Math.random() * max) + 1);
+	console.log( "DICE> " + roll + " / "+ max );
+	return roll;
+    },
+    /** L5R roll */
+    rollL5R = function( nb_dice, nb_keep, specialized ) {
+	// do not keep more dice than thrown
+	if( nb_keep > nb_dice ) {
+	    nb_keep = nb_dice;
+	}
+	var details = []; // all the results
+	var res = 0;      // results as value
+	var bonus = 0;    // if too much dices
+	// More than 10 dice
+	if( nb_dice > 10 ) {
+	    //console.log( "__DICE > 10");
+	    var dice_sup = Math.floor((nb_dice-10) / 2);
+	    //console.log( "supp="+dice_sup );
+	    // Total kept <= 10 ?
+	    if( (nb_keep + dice_sup) <= 10 ) {
+		console.log( "__OK");
+		nb_keep = nb_keep+dice_sup;
+		nb_dice = nb_dice - 2 * dice_sup;
+		//console.log( "d="+nb_dice+"  k="+nb_keep+"   s="+dice_sup );
+	    }
+	    // Too much kept dices
+	    else {
+		//console.log( "__KEEP==10" );
+		nb_dice = nb_dice - (10-nb_keep)*2;
+		nb_keep = 10;
+		//console.log( "d="+nb_dice+"  k="+nb_keep+"   s="+dice_sup );
+	    }
+	    //console.log( "d="+nb_dice+"  k="+nb_keep+"   s="+dice_sup );
+	}
+	// Too much to throw, too much to keep
+	if( (nb_dice >= 10) && (nb_keep >= 10) ) {
+	    //console.log( "__BOTH >10" );
+	    bonus = 2 * ((nb_dice-10) + (nb_keep-10));
+	    nb_dice = 10;
+	    nb_keep = 10;
+	}
+	// Can't throw more than 10 dices
+	if( nb_dice > 10 ) {
+	    nb_dice = 10;
+	}
+	// roll dices, take car of specialization
+	for( var i = 0; i < nb_dice; i++ ) {
+	    var roll = rollDiceOpenUp(10);
+	    if( roll == 1 && specialized )
+		roll = rollDiceOpenUp(10);
+	    details.push( roll );
+	}
+	details = details.sort(function(a, b) {
+	    return b - a;
+	});
+	if( bonus > 0 ) {
+	    details.push("+"+bonus);
+	}
+	for( var i = 0; i < nb_keep; i++ ) {
+	    res += details[i];
+	}
+	res += bonus;
+
+	return { res : res,
+		 details : details
+	       };
+    },
+    rollFate = function () {
+	var scale = ["Désastre","Terrible","Atroce","Mauvais","Médiocre","Moyen","Passable","Bon","Excellent","Formidable","Fantastique","Epique","Légendaire"];
+	var dice = ["-",".","+"];
+	var sum = 0,
+	res = "",
+	details = [];
+	// roll dices
+	for( var i = 0; i < 4; i++ ) {
+	    var roll = rollDiceNorm(3);
+	    details.push( dice[roll-1] );
+	    sum += (roll-2);
+	}
+	if( sum >= 0 ) {
+	    res += "+"
+	}
+	res += sum+" "+scale[sum+4];
+	return { res : res,
+		 details : details
+	       };
     };
-
-
 /*
 Inherit from the base widget class
 */
@@ -63,34 +154,36 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
 	this.renderChildren(spanNode, null);
     }
     this.divNode.appendChild(spanNode);
-    // Input
-    this.inDiceNode = $tw.utils.domMaker( "input", {
-	"class" : "rd-nb-dice",
-	attributes : { type:"number",
-		       value: this._nbDice ? this._nbDice : 1,
-		       min:1, max:20, style:"width: 2.5em"}
-    });
-    this.divNode.appendChild(this.inDiceNode);
-    var textNode = this.document.createTextNode(" g ");
-    this.divNode.appendChild(textNode);
-    this.inKeepNode = $tw.utils.domMaker( "input", {
-	"class" : "rd-nb-keep",
-	attributes : { type:"number",
-		       value: this._nbKeep ? this._nbKeep : 1,
-		       min:1, max:20, style:"width: 2.5em"}
-    });
-    this.divNode.appendChild(this.inKeepNode);
-    var specAttributes = {type:"checkbox"};
-    if( this._specialized ) {
-	specAttributes["checked"] = true;
+    if( this._type === "LSR" ) {
+	// Input
+	this.inDiceNode = $tw.utils.domMaker( "input", {
+	    "class" : "rd-nb-dice",
+	    attributes : { type:"number",
+			   value: this._nbDice ? this._nbDice : 1,
+			   min:1, max:20, style:"width: 2.5em"}
+	});
+	this.divNode.appendChild(this.inDiceNode);
+	var textNode = this.document.createTextNode(" g ");
+	this.divNode.appendChild(textNode);
+	this.inKeepNode = $tw.utils.domMaker( "input", {
+	    "class" : "rd-nb-keep",
+	    attributes : { type:"number",
+			   value: this._nbKeep ? this._nbKeep : 1,
+			   min:1, max:20, style:"width: 2.5em"}
+	});
+	this.divNode.appendChild(this.inKeepNode);
+	var specAttributes = {type:"checkbox"};
+	if( this._specialized ) {
+	    specAttributes["checked"] = true;
+	}
+	this.inSpecNode = $tw.utils.domMaker( "input", {
+	    "class" : "rd-spec",
+	    attributes : specAttributes
+	});
+	this.divNode.appendChild(this.inSpecNode);
+	textNode = this.document.createTextNode(" Spéc. ");
+	this.divNode.appendChild(textNode);
     }
-    this.inSpecNode = $tw.utils.domMaker( "input", {
-	"class" : "rd-spec",
-	attributes : specAttributes
-    });
-    this.divNode.appendChild(this.inSpecNode);
-    textNode = this.document.createTextNode(" Spéc. ");
-    this.divNode.appendChild(textNode);
     // Button
     this.rollBtnNode = $tw.utils.domMaker( "button", {
 	"class" : "rd-btn",
@@ -118,12 +211,15 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
     this.divNode.appendChild( this.detailNode );
     textNode = this.document.createTextNode("]");
     this.divNode.appendChild(textNode);			     
+    
     // Insert the elements into the DOM
     parent.insertBefore(this.divNode,nextSibling);
     this.domNodes.push(this.divNode);
-    this.domNodes.push(this.inDiceNode);
-    this.domNodes.push(this.inKeepNode);
-    this.domNodes.push(this.inSpecNode);
+    if( this._type === "L5R" ) {
+	this.domNodes.push(this.inDiceNode);
+	this.domNodes.push(this.inKeepNode);
+	this.domNodes.push(this.inSpecNode);
+    }
     this.domNodes.push(this.rollBtnNode);
     this.domNodes.push(this.resNode);
     this.domNodes.push(this.detailsNode);
@@ -182,62 +278,79 @@ RolldiceWidget.prototype.onClickEvent = function (event) {
     // var nb_dice = Number(nb_elem[0].value);
     // var nb_keep = Number(keep_elem[0].value);
     // var specialized = spe_elem[0].checked;
-    var nb_dice = Number( this.inDiceNode.value );
-    var nb_keep = Number( this.inKeepNode.value );
-    var specialized = this.inSpecNode.checked;
-    console.log( "nb="+nb_dice+" nk="+nb_keep+" spe=" + specialized );
-    if( nb_keep > nb_dice ) {
-	nb_keep = nb_dice;
+
+    if( this._type === "L5R" ) {
+
+	var nb_dice = Number( this.inDiceNode.value );
+	var nb_keep = Number( this.inKeepNode.value );
+	var specialized = this.inSpecNode.checked;
+	console.log( "nb="+nb_dice+" nk="+nb_keep+" spe=" + specialized );
+	
+	var result = rollL5R( nb_dice, nb_keep, specialized );
+    // if( nb_keep > nb_dice ) {
+    // 	nb_keep = nb_dice;
+    // }
+    // var details = [];
+    // var res = 0;
+    // var bonus = 0; // Si trop de dés
+    // if( nb_dice > 10 ) {
+    // 	//console.log( "__DICE > 10");
+    // 	var dice_sup = Math.floor((nb_dice-10) / 2);
+    // 	//console.log( "supp="+dice_sup );
+    // 	if( (nb_keep + dice_sup) <= 10 ) {
+    // 	    console.log( "__OK");
+    // 	    nb_keep = nb_keep+dice_sup;
+    // 	    nb_dice = nb_dice - 2 * dice_sup;
+    // 	    //console.log( "d="+nb_dice+"  k="+nb_keep+"   s="+dice_sup );
+    // 	}
+    // 	else {
+    // 	    //console.log( "__KEEP==10" );
+    // 	    nb_dice = nb_dice - (10-nb_keep)*2;
+    // 	    nb_keep = 10;
+    // 	    //console.log( "d="+nb_dice+"  k="+nb_keep+"   s="+dice_sup );
+    // 	}
+    // 	//console.log( "d="+nb_dice+"  k="+nb_keep+"   s="+dice_sup );
+    // }
+    // if( (nb_dice >= 10) && (nb_keep >= 10) ) {
+    // 	//console.log( "__BOTH >10" );
+    // 	bonus = 2 * ((nb_dice-10) + (nb_keep-10));
+    // 	nb_dice = 10;
+    // 	nb_keep = 10;
+    // }
+    // // 10 reste le max
+    // if( nb_dice > 10 ) {
+    // 	nb_dice = 10;
+    // }
+    // for( var i = 0; i < nb_dice; i++ ) {
+    // 	var roll = rollDiceOpenUp(10);
+    // 	if( roll == 1 && specialized )
+    // 	    roll = rollDiceOpenUp(10);
+    // 	details.push( roll );
+    // }
+    // details = details.sort(function(a, b) {
+    // 	return b - a;
+    // });
+    // if( bonus > 0 ) {
+    // 	details.push("+"+bonus);
+    // }
+    // for( var i = 0; i < nb_keep; i++ ) {
+    // 	res += details[i];
+    // }
+    // res += bonus;
+	// this.resNode.innerHTML = " : " + res;
+	// this.detailNode.innerHTML = details;
+
+	this.resNode.innerHTML = " : " + result.res;
+	this.detailNode.innerHTML = result.details;
     }
-    var details = [];
-    var res = 0;
-    var bonus = 0; // Si trop de dés
-    if( nb_dice > 10 ) {
-	//console.log( "__DICE > 10");
-	var dice_sup = Math.floor((nb_dice-10) / 2);
-	//console.log( "supp="+dice_sup );
-	if( (nb_keep + dice_sup) <= 10 ) {
-	    console.log( "__OK");
-	    nb_keep = nb_keep+dice_sup;
-	    nb_dice = nb_dice - 2 * dice_sup;
-	    //console.log( "d="+nb_dice+"  k="+nb_keep+"   s="+dice_sup );
-	}
-	else {
-	    //console.log( "__KEEP==10" );
-	    nb_dice = nb_dice - (10-nb_keep)*2;
-	    nb_keep = 10;
-	    //console.log( "d="+nb_dice+"  k="+nb_keep+"   s="+dice_sup );
-	}
-	//console.log( "d="+nb_dice+"  k="+nb_keep+"   s="+dice_sup );
+    else if( this._type === "Fate" ) {
+	var result = rollFate();
+	this.resNode.innerHTML = " : " + result.res;
+	this.detailNode.innerHTML = result.details;
     }
-    if( (nb_dice >= 10) && (nb_keep >= 10) ) {
-	//console.log( "__BOTH >10" );
-	bonus = 2 * ((nb_dice-10) + (nb_keep-10));
-	nb_dice = 10;
-	nb_keep = 10;
+    else {
+	console.log( "__CLICK unk=",this._type );
     }
-    // 10 reste le max
-    if( nb_dice > 10 ) {
-	nb_dice = 10;
-    }
-    for( var i = 0; i < nb_dice; i++ ) {
-	var roll = rollDice(10);
-	if( roll == 1 && specialized )
-	    roll = rollDice(10);
-	details.push( roll );
-    }
-    details = details.sort(function(a, b) {
-	return b - a;
-    });
-    if( bonus > 0 ) {
-	details.push("+"+bonus);
-    }
-    for( var i = 0; i < nb_keep; i++ ) {
-	res += details[i];
-    }
-    res += bonus;
-    this.resNode.innerHTML = " : " + res;
-    this.detailNode.innerHTML = details;
 };
 RolldiceWidget.prototype.parseField = function (fieldValue) {
     // Split with ":"
