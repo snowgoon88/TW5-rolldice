@@ -102,7 +102,8 @@ var Widget = require("$:/core/modules/widgets/widget.js").widget,
 		 details : details
 	       };
     },
-    rollFate = function () {
+    rollFate = function (comp) {
+	// Not used
 	var scale = ["Désastre","Terrible","Atroce","Mauvais","Médiocre","Moyen","Passable","Bon","Excellent","Formidable","Fantastique","Epique","Légendaire"];
 	var dice = ["-",".","+"];
 	var sum = 0,
@@ -114,10 +115,12 @@ var Widget = require("$:/core/modules/widgets/widget.js").widget,
 	    details.push( dice[roll-1] );
 	    sum += (roll-2);
 	}
+	// Add competence
+	sum += comp;
 	if( sum >= 0 ) {
 	    res += "+"
 	}
-	res += sum+" "+scale[sum+4];
+	res += sum; //+" "+scale[sum+4];
 	return { res : res,
 		 details : details
 	       };
@@ -154,7 +157,7 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
 	this.renderChildren(spanNode, null);
     }
     this.divNode.appendChild(spanNode);
-    if( this._type === "LSR" ) {
+    if( this._type === "L5R" ) {
 	// Input
 	this.inDiceNode = $tw.utils.domMaker( "input", {
 	    "class" : "rd-nb-dice",
@@ -183,6 +186,24 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
 	this.divNode.appendChild(this.inSpecNode);
 	textNode = this.document.createTextNode(" Spéc. ");
 	this.divNode.appendChild(textNode);
+    }
+    else if( this._type === "Fate" ) {
+	// Niveau
+	this.inComp = $tw.utils.domMaker( "select", {
+	    "class" : "rd-ft-comp"
+	});
+	// append level
+	var scale = ["-2 Atroce","-1 Mauvais","+0 Médiocre","+1 Moyen","+2 Passable","+3 Bon","+4 Excellent","+5 Formidable","+6 Fantastique","+7 Epique","+8 Légendaire"];
+	for( var i=0; i < scale.length; i++ ) {
+	    var option = this.document.createElement( "option" );
+	    option.value = scale[i];
+	    option.text =  scale[i];
+	    if( i === 2 ) { // default value
+		option.selected = true;
+	    }
+	    this.inComp.appendChild(option);
+	}
+	this.divNode.appendChild( this.inComp );
     }
     // Button
     this.rollBtnNode = $tw.utils.domMaker( "button", {
@@ -344,7 +365,9 @@ RolldiceWidget.prototype.onClickEvent = function (event) {
 	this.detailNode.innerHTML = result.details;
     }
     else if( this._type === "Fate" ) {
-	var result = rollFate();
+	// Comp level
+	var comp = Number( this.inComp.selectedIndex ) - 2;
+	var result = rollFate( comp );
 	this.resNode.innerHTML = " : " + result.res;
 	this.detailNode.innerHTML = result.details;
     }
