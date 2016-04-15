@@ -157,6 +157,10 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
 	this.renderChildren(spanNode, null);
     }
     this.divNode.appendChild(spanNode);
+    // Insert Selection
+    var selectNode = $tw.utils.domMaker( "span", {
+	"class" : "rd-select"
+    });
     if( this._type === "L5R" ) {
 	// Input
 	this.inDiceNode = $tw.utils.domMaker( "input", {
@@ -165,16 +169,16 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
 			   value: this._nbDice ? this._nbDice : 1,
 			   min:1, max:20, style:"width: 2.5em"}
 	});
-	this.divNode.appendChild(this.inDiceNode);
+	selectNode.appendChild(this.inDiceNode);
 	var textNode = this.document.createTextNode(" g ");
-	this.divNode.appendChild(textNode);
+	selectNode.appendChild(textNode);
 	this.inKeepNode = $tw.utils.domMaker( "input", {
 	    "class" : "rd-nb-keep",
 	    attributes : { type:"number",
 			   value: this._nbKeep ? this._nbKeep : 1,
 			   min:1, max:20, style:"width: 2.5em"}
 	});
-	this.divNode.appendChild(this.inKeepNode);
+	selectNode.appendChild(this.inKeepNode);
 	var specAttributes = {type:"checkbox"};
 	if( this._specialized ) {
 	    specAttributes["checked"] = true;
@@ -183,9 +187,9 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
 	    "class" : "rd-spec",
 	    attributes : specAttributes
 	});
-	this.divNode.appendChild(this.inSpecNode);
+	selectNode.appendChild(this.inSpecNode);
 	textNode = this.document.createTextNode(" Spéc. ");
-	this.divNode.appendChild(textNode);
+	selectNode.appendChild(textNode);
     }
     else if( this._type === "Fate" ) {
 	// Niveau
@@ -203,8 +207,9 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
 	    }
 	    this.inComp.appendChild(option);
 	}
-	this.divNode.appendChild( this.inComp );
+	selectNode.appendChild( this.inComp );
     }
+     this.divNode.appendChild(selectNode);
     // Button
     this.rollBtnNode = $tw.utils.domMaker( "button", {
 	"class" : "rd-btn",

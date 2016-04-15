@@ -8,8 +8,16 @@
  * MUST not save as text/css for macro to be processed
 */
 
-.rd-ft-comp {
+.rd-select {
     border: none;
+    /*border-style: none none none ridge;*/
     margin-left: 0.5em;
     margin-right: 0.5em;
+    /*color: green;*/
+    background-color: <<colour page-background>>;
+}
+.rd-nb-dice, .rd-nb-keep, .rd-ft-comp {
+   /*border: none;*/
+  border-style: none none ridge none;
+   background-color: <<colour page-background>>;
 }
