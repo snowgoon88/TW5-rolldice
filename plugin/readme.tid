@@ -3,6 +3,8 @@ title: $:/plugins/snowgoon88/rolldice/readme
 !! What ?
 This plugin adds various "dice" widget that roll dices for you.
 
+Currently, it handles "L5R" and "Fate" rolls.
+
 !! To try it or get the latest news
 See [[http://snowgoon88.github.io/TW5-rolldice]]
 

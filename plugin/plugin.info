@@ -2,7 +2,7 @@
 	"title": "$:/plugins/snowgoon88/rolldice",
 	"description": "A Widget to roll dice for RPGs",
 	"author": "AlainD",
-	"version": "0.1",
+	"version": "0.1.0",
 	"core-version": ">=5.1.11",
 	"source": "https://github.com/snowgoon88/TW5-rolldice",
 	"plugin-type": "plugin",

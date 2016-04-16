@@ -1,6 +1,16 @@
 title: About the Rolldice plugin
 type: text/vnd.tiddlywiki
 
+This plugin adds a `<$rolldice>` widget that can roll "L5R" or "Fate dices.
+
+!! Install 
+
+To add the plugin to your own TiddlyWiki5, just drag this link to the browser window:
+
+[[$:/plugins/snowgoon88/rolldice]]
+
+!! Source code
+On github [[https://github.com/snowgoon88/TW5-rolldice]]
 
 !! Issus, Critics, Other
 
