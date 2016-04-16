@@ -27,7 +27,7 @@ var Widget = require("$:/core/modules/widgets/widget.js").widget,
 	    roll = Math.floor((Math.random() * max) + 1);
 	    val = val + roll;
 	}
-	console.log( "DICE> " + val + " / "+ max );
+	//DEBUG console.log( "DICE> " + val + " / "+ max );
 	return val;
     },
     /** Normal dice : Fate */
@@ -36,7 +36,7 @@ var Widget = require("$:/core/modules/widgets/widget.js").widget,
 	max = max !== undefined ? max : 6;
 	//
 	var roll = Math.floor((Math.random() * max) + 1);
-	console.log( "DICE> " + roll + " / "+ max );
+	//DEBUG console.log( "DICE> " + roll + " / "+ max );
 	return roll;
     },
     /** L5R roll */
@@ -55,7 +55,7 @@ var Widget = require("$:/core/modules/widgets/widget.js").widget,
 	    //console.log( "supp="+dice_sup );
 	    // Total kept <= 10 ?
 	    if( (nb_keep + dice_sup) <= 10 ) {
-		console.log( "__OK");
+		//DEBUG console.log( "__OK");
 		nb_keep = nb_keep+dice_sup;
 		nb_dice = nb_dice - 2 * dice_sup;
 		//console.log( "d="+nb_dice+"  k="+nb_keep+"   s="+dice_sup );
@@ -103,8 +103,6 @@ var Widget = require("$:/core/modules/widgets/widget.js").widget,
 	       };
     },
     rollFate = function (comp) {
-	// Not used
-	var scale = ["Désastre","Terrible","Atroce","Mauvais","Médiocre","Moyen","Passable","Bon","Excellent","Formidable","Fantastique","Epique","Légendaire"];
 	var dice = ["-",".","+"];
 	var sum = 0,
 	res = "",
@@ -202,7 +200,8 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
 	    var option = this.document.createElement( "option" );
 	    option.value = scale[i];
 	    option.text =  scale[i];
-	    if( i === 2 ) { // default value
+	    var startComp = this._compLevel ? this._compLevel : 2
+	    if( i === startComp ) { // default value
 		option.selected = true;
 	    }
 	    this.inComp.appendChild(option);
@@ -250,7 +249,7 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
     this.domNodes.push(this.resNode);
     this.domNodes.push(this.detailsNode);
     
-    // Render into the dom
+    // Render into the dom : NO, we do not care for children
     // this.renderChildren(this.parentDomNode,nextSibling);
 };
 
@@ -263,17 +262,17 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
  */
 RolldiceWidget.prototype.execute = function() {
     // Get attributes with high priority
-    this._type = this.getAttribute( "type" );   // not used
+    this._type = this.getAttribute( "type" );   // L5R ou Fate
     this._value = this.getAttribute( "value" ); // to be parsed
     this._label = this.getAttribute( "label" ); // replace Child
     // Get Field (change other only if undefined)
     if( this.hasAttribute( "field" ) ) {
 	var fieldName = this.getAttribute( "field" );
 	var tiddlerName = this.getVariable("currentTiddler");
-	console.log( "__CURRENT t="+tiddlerName);
+	//DEBUG console.log( "__CURRENT t="+tiddlerName);
 	var tiddler = $tw.wiki.getTiddler(tiddlerName);
 	var fieldValue = tiddler.getFieldString(fieldName);
-	console.log( "__FIELD n="+fieldName+" v="+fieldValue );
+	//DEBUG console.log( "__FIELD n="+fieldName+" v="+fieldValue );
 	this.parseField( fieldValue );
     }
     // Default type
@@ -288,22 +287,6 @@ RolldiceWidget.prototype.execute = function() {
 
 RolldiceWidget.prototype.onClickEvent = function (event) {
     console.log( "__ROLL" );
-    // console.log( "onClick.event: " + event );
-    // console.log( "onClick.event.target: " + event.target );
-    // var elem = event.target;
-    // console.log( "elem: " + elem.tagName );
-    // console.log( "elem: " + elem.id );
-    //var src_elem = document.getElementById(id);
-    // var src_elem = event.target.parentElement;
-    // var out_elem = src_elem.getElementsByClassName('result');
-    // var details_elem = src_elem.getElementsByClassName('details');
-    // var nb_elem  = src_elem.getElementsByClassName('nbDice');
-    // var keep_elem = src_elem.getElementsByClassName('nbKeep');
-    // var spe_elem = src_elem.getElementsByClassName('specialized');
-
-    // var nb_dice = Number(nb_elem[0].value);
-    // var nb_keep = Number(keep_elem[0].value);
-    // var specialized = spe_elem[0].checked;
 
     if( this._type === "L5R" ) {
 
@@ -313,58 +296,6 @@ RolldiceWidget.prototype.onClickEvent = function (event) {
 	console.log( "nb="+nb_dice+" nk="+nb_keep+" spe=" + specialized );
 	
 	var result = rollL5R( nb_dice, nb_keep, specialized );
-    // if( nb_keep > nb_dice ) {
-    // 	nb_keep = nb_dice;
-    // }
-    // var details = [];
-    // var res = 0;
-    // var bonus = 0; // Si trop de dés
-    // if( nb_dice > 10 ) {
-    // 	//console.log( "__DICE > 10");
-    // 	var dice_sup = Math.floor((nb_dice-10) / 2);
-    // 	//console.log( "supp="+dice_sup );
-    // 	if( (nb_keep + dice_sup) <= 10 ) {
-    // 	    console.log( "__OK");
-    // 	    nb_keep = nb_keep+dice_sup;
-    // 	    nb_dice = nb_dice - 2 * dice_sup;
-    // 	    //console.log( "d="+nb_dice+"  k="+nb_keep+"   s="+dice_sup );
-    // 	}
-    // 	else {
-    // 	    //console.log( "__KEEP==10" );
-    // 	    nb_dice = nb_dice - (10-nb_keep)*2;
-    // 	    nb_keep = 10;
-    // 	    //console.log( "d="+nb_dice+"  k="+nb_keep+"   s="+dice_sup );
-    // 	}
-    // 	//console.log( "d="+nb_dice+"  k="+nb_keep+"   s="+dice_sup );
-    // }
-    // if( (nb_dice >= 10) && (nb_keep >= 10) ) {
-    // 	//console.log( "__BOTH >10" );
-    // 	bonus = 2 * ((nb_dice-10) + (nb_keep-10));
-    // 	nb_dice = 10;
-    // 	nb_keep = 10;
-    // }
-    // // 10 reste le max
-    // if( nb_dice > 10 ) {
-    // 	nb_dice = 10;
-    // }
-    // for( var i = 0; i < nb_dice; i++ ) {
-    // 	var roll = rollDiceOpenUp(10);
-    // 	if( roll == 1 && specialized )
-    // 	    roll = rollDiceOpenUp(10);
-    // 	details.push( roll );
-    // }
-    // details = details.sort(function(a, b) {
-    // 	return b - a;
-    // });
-    // if( bonus > 0 ) {
-    // 	details.push("+"+bonus);
-    // }
-    // for( var i = 0; i < nb_keep; i++ ) {
-    // 	res += details[i];
-    // }
-    // res += bonus;
-	// this.resNode.innerHTML = " : " + res;
-	// this.detailNode.innerHTML = details;
 
 	this.resNode.innerHTML = " : " + result.res;
 	this.detailNode.innerHTML = result.details;
@@ -377,13 +308,13 @@ RolldiceWidget.prototype.onClickEvent = function (event) {
 	this.detailNode.innerHTML = result.details;
     }
     else {
-	console.log( "__CLICK unk=",this._type );
+	//DEBUG console.log( "__CLICK unk=",this._type );
     }
 };
 RolldiceWidget.prototype.parseField = function (fieldValue) {
     // Split with ":"
     var items = fieldValue.split( ":" );
-    console.log( "__PF it="+items);
+    //DEBUG console.log( "__PF it="+items);
     if( items.length === 3 && this._type === undefined ) {
 	this._type = items.shift();
 	console.log( "__TYPE "+this._type );
@@ -409,10 +340,15 @@ RolldiceWidget.prototype.parseValue = function (diceType, strValue) {
 	} 
 	// nbDice
 	var numbers = strValue.split( "g" );
-	console.log( "__PARSE numbers="+numbers );
+	//DEBUG console.log( "__PARSE numbers="+numbers );
 	this._nbDice = Number( numbers[0] );
 	this._nbKeep = Number( numbers[1] );
-	console.log( "__PARSE nb="+this._nbDice+" nk="+this._nbKeep+" spe=" + this._specialized );
+	//DEBUG console.log( "__PARSE nb="+this._nbDice+" nk="+this._nbKeep+" spe=" + this._specialized );
+    }
+    // Fate
+    else if( diceType === "Fate" ) {
+	this._compLevel = Number( strValue ) + 2;
+	//DEBUG console.log( "__PARSE lvl="+this._compLevel );
     }
 };
 
