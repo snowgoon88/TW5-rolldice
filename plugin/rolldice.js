@@ -139,8 +139,8 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
    
     // Will hold all nodes created
     var nodes = []; 
-    // Div 
-    this.divNode = $tw.utils.domMaker( "div", {
+    // Span, plus souple que Div 
+    this.rollNode = $tw.utils.domMaker( "span", {
 	"class" : "rd-dice"
     });
     // Render into the dom the Children of the node
@@ -154,7 +154,7 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
     else {
 	this.renderChildren(spanNode, null);
     }
-    this.divNode.appendChild(spanNode);
+    this.rollNode.appendChild(spanNode);
     // Insert Selection
     var selectNode = $tw.utils.domMaker( "span", {
 	"class" : "rd-select"
@@ -208,7 +208,7 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
 	}
 	selectNode.appendChild( this.inComp );
     }
-     this.divNode.appendChild(selectNode);
+     this.rollNode.appendChild(selectNode);
     // Button
     this.rollBtnNode = $tw.utils.domMaker( "button", {
 	"class" : "rd-btn",
@@ -220,26 +220,26 @@ RolldiceWidget.prototype.render = function(parent,nextSibling) {
     });
     textNode = this.document.createTextNode("Roll");
     this.rollBtnNode.appendChild(textNode);
-    this.divNode.appendChild( this.rollBtnNode );
+    this.rollNode.appendChild( this.rollBtnNode );
     // Results
     this.resNode = $tw.utils.domMaker( "span", {
 	"class" : "rd-result"
     });
     textNode = this.document.createTextNode(" : -");
     this.resNode.appendChild(textNode);
-    this.divNode.appendChild( this.resNode );
+    this.rollNode.appendChild( this.resNode );
     textNode = this.document.createTextNode(" [");
-    this.divNode.appendChild(textNode);
+    this.rollNode.appendChild(textNode);
     this.detailNode = $tw.utils.domMaker( "span", {
 	"class" : "rd-details"
     });
-    this.divNode.appendChild( this.detailNode );
+    this.rollNode.appendChild( this.detailNode );
     textNode = this.document.createTextNode("]");
-    this.divNode.appendChild(textNode);			     
+    this.rollNode.appendChild(textNode);			     
     
     // Insert the elements into the DOM
-    parent.insertBefore(this.divNode,nextSibling);
-    this.domNodes.push(this.divNode);
+    parent.insertBefore(this.rollNode,nextSibling);
+    this.domNodes.push(this.rollNode);
     if( this._type === "L5R" ) {
 	this.domNodes.push(this.inDiceNode);
 	this.domNodes.push(this.inKeepNode);
