@@ -1,0 +1,5 @@
+var data =
+    { 
+	"motivation" :
+	[{"fr":"Succès",  "eng":"Achievement", "desc":"Surmonter les obstacles et réussir; être le meilleur", "prob":3}]
+    };
